@@ -10,6 +10,9 @@ current_rate:
   effective_date: "2025-12-18"
   last_change_bp: -25
   last_change_date: "2025-12-18"
+    increment_bp: 25
+  min_rate: 0.00
+  max_rate: 10.00
 
 metadata:
   config_version: "1.0"
