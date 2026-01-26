@@ -1,0 +1,8 @@
+bank:
+  code: "FED"
+  name: "Federal Reserve"
+  currency: "USD"
+
+current_rate:
+  value: 4.50
+  effective_date: "2025-12-18"
