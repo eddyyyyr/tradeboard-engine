@@ -17,3 +17,9 @@ current_rate:
 metadata:
   config_version: "1.0"
   notes: "Initial FED config – structure only"
+
+  futures:
+  source: "barchart"
+  contract_type: "fed_funds"
+  frequency: "monthly"
+  update_policy: "manual_csv"
