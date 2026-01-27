@@ -1,5 +1,4 @@
 # Federal Reserve – TradeBoard Engine
-
 bank:
   code: "FED"
   name: "Federal Reserve"
@@ -15,12 +14,12 @@ current_rate:
   min_rate: 0.00
   max_rate: 10.00
 
-metadata:
-  config_version: "1.0"
-  notes: "Initial FED config – structure only"
-
 futures:
   source: "barchart"
   contract_type: "fed_funds"
   frequency: "monthly"
   update_policy: "manual_csv"
+
+metadata:
+  config_version: "1.0"
+  notes: "Initial FED config – structure only"
