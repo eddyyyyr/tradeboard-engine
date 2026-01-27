@@ -1,8 +1,26 @@
+# Federal Reserve – TradeBoard Engine
+
 bank:
   code: "FED"
   name: "Federal Reserve"
+  country: "United States"
   currency: "USD"
 
 current_rate:
   value: 4.50
   effective_date: "2025-12-18"
+  last_change_bp: -25
+  last_change_date: "2025-12-18"
+  increment_bp: 25
+  min_rate: 0.00
+  max_rate: 10.00
+
+metadata:
+  config_version: "1.0"
+  notes: "Initial FED config – structure only"
+
+futures:
+  source: "barchart"
+  contract_type: "fed_funds"
+  frequency: "monthly"
+  update_policy: "manual_csv"
