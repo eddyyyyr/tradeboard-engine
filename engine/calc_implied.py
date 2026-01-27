@@ -1,37 +1,92 @@
-from engine.load_config import load_config
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Dict, Any, List, Optional
 
 
-def compute_implied_rates(current_rate, futures_prices):
+@dataclass
+class FutureRow:
+    month: str            # "2026-03" etc.
+    price: float          # future price (ex 95.25)
+    open_interest: Optional[int] = None
+    volume: Optional[int] = None
+    bid_ask_spread_bp: Optional[float] = None
+
+
+def implied_rate_from_price(price: float, price_formula: str) -> float:
     """
-    Conversion simplifiée : implied rate = 100 - prix future
+    Convertit un prix future en taux implicite.
+    - "100_minus_rate" : implied = 100 - price
+    - "rate_direct"    : implied = price
     """
-    implied = {}
-    for label, price in futures_prices.items():
-        implied[label] = round(100 - price, 2)
-    return implied
+    if price_formula == "100_minus_rate":
+        return 100.0 - float(price)
+    if price_formula == "rate_direct":
+        return float(price)
+    raise ValueError(f"Unknown price_formula: {price_formula}")
 
 
-def main():
-    config = load_config("FED")
+def assess_quality(
+    row: FutureRow,
+    thresholds: Dict[str, Any],
+    ignore_missing_spread: bool = True,
+) -> str:
+    """
+    Reprise directe de l'idée de Claude:
+    - OI + volume = critères obligatoires
+    - spread optionnel si absent
+    """
+    oi = row.open_interest or 0
+    vol = row.volume or 0
+    spread = row.bid_ask_spread_bp
 
-    current_rate = config["current_rate"]["value"]
+    def ok_spread(level: str) -> bool:
+        if spread is None:
+            return True if ignore_missing_spread else False
+        max_spread = thresholds[level].get("max_bid_ask_spread_bp")
+        if max_spread is None:
+            return True
+        return spread <= float(max_spread)
 
-    # Futures PRIX (exemple simple pour test)
-    futures_prices = {
-        "2026-03": 95.50,
-        "2026-06": 95.75,
-        "2026-09": 96.00,
-    }
+    # high
+    if (
+        oi >= int(thresholds["high"]["min_open_interest"])
+        and vol >= int(thresholds["high"]["min_daily_volume"])
+        and ok_spread("high")
+    ):
+        return "high"
 
-    implied_rates = compute_implied_rates(current_rate, futures_prices)
+    # medium
+    if (
+        oi >= int(thresholds["medium"]["min_open_interest"])
+        and vol >= int(thresholds["medium"]["min_daily_volume"])
+        and ok_spread("medium")
+    ):
+        return "medium"
 
-    print("\n=== IMPLIED RATES (TEST) ===")
-    print(f"Current rate: {current_rate}%\n")
-
-    for month, rate in implied_rates.items():
-        delta_bp = round((rate - current_rate) * 100)
-        print(f"{month} → {rate}% ({delta_bp:+} bp)")
+    return "low"
 
 
-if __name__ == "__main__":
-    main()
+def compute_implied_curve_from_rows(
+    config: Dict[str, Any],
+    rows: List[FutureRow],
+) -> List[Dict[str, Any]]:
+    """
+    V1: calcule une courbe de taux implicites à partir de rows futures.
+    Output simple: [{month, implied_rate, quality}]
+    """
+    futures_cfg = config.get("futures", {})
+    price_formula = futures_cfg.get("price_formula", "100_minus_rate")
+
+    thresholds = config.get("data_quality_thresholds", {
+        "high": {"min_open_interest": 0, "min_daily_volume": 0},
+        "medium": {"min_open_interest": 0, "min_daily_volume": 0},
+    })
+    ignore_missing_spread = bool(thresholds.get("ignore_missing_spread", True))
+
+    out = []
+    for r in rows:
+        implied = implied_rate_from_price(r.price, price_formula)
+        q = assess_quality(r, thresholds, ignore_missing_spread=ignore_missing_spread)
+        out.append({"month": r.month, "implied_rate": round(implied, 4), "quality": q})
+    return out
