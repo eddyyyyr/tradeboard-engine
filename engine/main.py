@@ -1,5 +1,11 @@
+from load_config import load_config
+
+
 def main():
-    print("TradeBoard Engine V1 — OK")
+    fed_config = load_config("FED")
+    print("FED loaded:")
+    print(fed_config["bank"]["name"])
+    print("Current rate:", fed_config["current_rate"]["value"])
 
 
 if __name__ == "__main__":
