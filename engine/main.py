@@ -1,4 +1,4 @@
-from engine.load_config import load_config
+from load_config import load_config
 from engine.calc_implied import compute_implied_curve_from_rows
 from datetime import date
 
