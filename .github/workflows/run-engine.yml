@@ -24,4 +24,4 @@ jobs:
 
       - name: Run engine
         run: |
-          python3 engine/main.py
+          python3 -m engine.main
