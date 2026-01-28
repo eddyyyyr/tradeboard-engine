@@ -13,7 +13,7 @@ def main():
     # --- Futures fictives (test moteur) ---
     futures_rows = [
         {
-            "contract_month": date(2026, 3, 1),
+            "month": "2026-03",
             "price": 95.25,
             "open_interest": 120000,
             "volume": 45000,
