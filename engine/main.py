@@ -1,6 +1,7 @@
-from load_config import load_config
-from engine.calc_implied import compute_implied_curve_from_rows
+from .load_config import load_config
+from .calc_implied import compute_implied_curve_from_rows
 from datetime import date
+
 
 def main():
     fed = load_config("FED")
@@ -35,6 +36,7 @@ def main():
     print("\n📈 Implied rate curve:")
     for point in implied_curve:
         print(point)
+
 
 if __name__ == "__main__":
     main()
