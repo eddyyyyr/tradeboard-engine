@@ -1,17 +1,40 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Union
 
+
+# =========================
+# Helpers
+# =========================
+
+def _get(row: Union[dict, Any], key: str, default=None):
+    """
+    Permet d'accéder aux champs d'une row qu'elle soit:
+    - un dict
+    - un objet / dataclass
+    """
+    if isinstance(row, dict):
+        return row.get(key, default)
+    return getattr(row, key, default)
+
+
+# =========================
+# Data structures
+# =========================
 
 @dataclass
 class FutureRow:
-    month: str            # "2026-03" etc.
+    month: str            # "2026-03"
     price: float          # future price (ex 95.25)
     open_interest: Optional[int] = None
     volume: Optional[int] = None
     bid_ask_spread_bp: Optional[float] = None
 
+
+# =========================
+# Core logic
+# =========================
 
 def implied_rate_from_price(price: float, price_formula: str) -> float:
     """
@@ -27,7 +50,7 @@ def implied_rate_from_price(price: float, price_formula: str) -> float:
 
 
 def assess_quality(
-    row: FutureRow,
+    row: Union[FutureRow, dict],
     thresholds: Dict[str, Any],
     ignore_missing_spread: bool = True,
 ) -> str:
@@ -36,9 +59,9 @@ def assess_quality(
     - OI + volume = critères obligatoires
     - spread optionnel si absent
     """
-    oi = row.open_interest or 0
-    vol = row.volume or 0
-    spread = row.bid_ask_spread_bp
+    oi = _get(row, "open_interest", 0) or 0
+    vol = _get(row, "volume", 0) or 0
+    spread = _get(row, "bid_ask_spread_bp")
 
     def ok_spread(level: str) -> bool:
         if spread is None:
@@ -69,7 +92,7 @@ def assess_quality(
 
 def compute_implied_curve_from_rows(
     config: Dict[str, Any],
-    rows: List[FutureRow],
+    rows: List[Union[FutureRow, dict]],
 ) -> List[Dict[str, Any]]:
     """
     V1: calcule une courbe de taux implicites à partir de rows futures.
@@ -78,15 +101,30 @@ def compute_implied_curve_from_rows(
     futures_cfg = config.get("futures", {})
     price_formula = futures_cfg.get("price_formula", "100_minus_rate")
 
-    thresholds = config.get("data_quality_thresholds", {
-        "high": {"min_open_interest": 0, "min_daily_volume": 0},
-        "medium": {"min_open_interest": 0, "min_daily_volume": 0},
-    })
+    thresholds = config.get(
+        "data_quality_thresholds",
+        {
+            "high": {"min_open_interest": 0, "min_daily_volume": 0},
+            "medium": {"min_open_interest": 0, "min_daily_volume": 0},
+        },
+    )
+
     ignore_missing_spread = bool(thresholds.get("ignore_missing_spread", True))
 
     out = []
+
     for r in rows:
-        implied = implied_rate_from_price(r.price, price_formula)
+        price = _get(r, "price")
+        if price is None:
+            continue  # sécurité
+
+        implied = implied_rate_from_price(price, price_formula)
         q = assess_quality(r, thresholds, ignore_missing_spread=ignore_missing_spread)
-        out.append({"month": r.month, "implied_rate": round(implied, 4), "quality": q})
+
+        out.append({
+            "month": _get(r, "month"),
+            "implied_rate": round(implied, 4),
+            "quality": q,
+        })
+
     return out
