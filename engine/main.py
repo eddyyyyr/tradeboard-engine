@@ -28,10 +28,10 @@ def main():
         },
     ]
 
-    # ✅ IMPORTANT: appel en positionnel (pas de keyword futures_rows=)
+    # ✅ calc_implied.py attend d'abord "config" (dict), puis "rows" (list)
     implied_curve = compute_implied_curve_from_rows(
+        fed,
         futures_rows,
-        fed["current_rate"]["value"],
     )
 
     print("\n📈 Implied rate curve:")
