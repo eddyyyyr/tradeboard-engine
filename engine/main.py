@@ -12,6 +12,7 @@ CSV_PATH = Path("data/futures/fed_funds.csv")
 
 
 def main():
+    # Charger la config FED
     fed = load_config("FED")
 
     print("✅ FED loaded")
@@ -26,7 +27,8 @@ def main():
     with CSV_PATH.open("r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         for r in reader:
-            # Colonnes Barchart: Symbol, Name, Latest, Change, %Change, Open, High, Low, Volume, Time
+            # Colonnes Barchart:
+            # Symbol, Name, Latest, Change, %Change, Open, High, Low, Volume, Time
             rows.append(
                 {
                     "symbol": (r.get("Symbol") or "").strip(),
@@ -38,9 +40,27 @@ def main():
             )
 
     print(f"\n📄 Loaded CSV: {CSV_PATH} ({len(rows)} rows)")
-    print("🔎 Preview (first 10 rows):")
+
+    # 2) Preview brut (sécurité)
+    print("\n🔎 Preview raw CSV (first 10 rows):")
     for r in rows[:10]:
         print(r)
+
+    # 3) Calcul des taux implicites (100 - price)
+    print("\n📈 Implied rates (first 10):")
+    for r in rows[:10]:
+        try:
+            price = float(r["latest"])
+        except (ValueError, TypeError):
+            continue
+
+        implied_rate = 100.0 - price
+        print(
+            r["symbol"],
+            "→",
+            round(implied_rate, 4),
+            "%",
+        )
 
 
 if __name__ == "__main__":
