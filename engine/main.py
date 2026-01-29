@@ -1,5 +1,3 @@
-# engine/main.py
-
 from __future__ import annotations
 
 import csv
@@ -9,11 +7,11 @@ from pathlib import Path
 from .load_config import load_config
 
 
-# Tu as uploadé: data/futures/fed_funds.csv
-CSV_PATH = Path("data/futures/fed_funds.csv")
+# CSV ECB (uploadé depuis Barchart)
+CSV_PATH = Path("data/futures/ecb_funds.csv")
 
-# On écrit le résultat ici (committable ou non, comme tu veux)
-OUT_PATH = Path("data/output/fed_implied_curve.json")
+# Sortie JSON ECB
+OUT_PATH = Path("data/output/ecb_implied_curve.json")
 
 
 # Mapping des codes mois futures (H=Mar, M=Jun, U=Sep, Z=Dec, etc.)
@@ -41,7 +39,6 @@ def parse_month_from_symbol(symbol: str) -> str | None:
     if len(symbol) < 4:
         return None
 
-    # Attend un format type ZQX25 (root + monthLetter + yy)
     month_letter = symbol[-3]
     yy = symbol[-2:]
 
@@ -70,22 +67,22 @@ def to_int(x: str) -> int | None:
     if not x:
         return None
     try:
-        return int(float(x))  # au cas où c'est "20674.0"
+        return int(float(x))
     except ValueError:
         return None
 
 
 def implied_rate_from_price(price: float) -> float:
-    # Fed Funds futures: implied rate = 100 - price
+    # Futures taux : implied rate = 100 - price
     return 100.0 - float(price)
 
 
 def main():
-    fed = load_config("FED")
+    ecb = load_config("ECB")
 
-    print("✅ FED loaded")
-    print("Bank:", fed["bank"]["name"])
-    print("Current rate:", fed["current_rate"]["value"])
+    print("✅ ECB loaded")
+    print("Bank:", ecb["bank"]["name"])
+    print("Current rate:", ecb["current_rate"]["value"])
 
     if not CSV_PATH.exists():
         raise FileNotFoundError(f"CSV not found: {CSV_PATH} (check path + commit)")
@@ -101,7 +98,7 @@ def main():
 
             month = parse_month_from_symbol(symbol)
             if month is None or latest is None:
-                continue  # on skip tout ce qui est inexploitable
+                continue
 
             raw.append(
                 {
@@ -115,7 +112,7 @@ def main():
     print(f"\n📄 Loaded CSV: {CSV_PATH}")
     print(f"✅ Parsed rows: {len(raw)}")
 
-    # 2) OPTION 1: garder 1 contrat par mois (celui au plus gros volume)
+    # 2) OPTION 1: 1 contrat par mois (max volume)
     best_by_month: dict[str, dict] = {}
     for r in raw:
         m = r["month"]
@@ -124,27 +121,29 @@ def main():
 
     picked = [best_by_month[m] for m in sorted(best_by_month.keys())]
 
-    # 3) Construire la courbe implicite propre (JSON-friendly)
+    # 3) Construire la courbe implicite
     curve = []
     for r in picked:
         rate = implied_rate_from_price(r["price"])
         curve.append(
             {
-                "month": r["month"],           # "2026-06"
-                "rate": round(rate, 4),        # 3.51
-                "symbol": r["symbol"],         # "ZQM26"
-                "price": r["price"],           # 96.49
-                "volume": r["volume"],         # 4308
+                "month": r["month"],
+                "rate": round(rate, 4),
+                "symbol": r["symbol"],
+                "price": r["price"],
+                "volume": r["volume"],
             }
         )
 
-    # 4) Écrire le JSON sur disque + afficher un aperçu
+    # 4) Écriture JSON
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(curve, indent=2), encoding="utf-8")
 
     print("\n📈 Implied curve (1 per month, max volume):")
     for p in curve[:12]:
-        print(f"{p['month']} | {p['symbol']} | price={p['price']} | vol={p['volume']} -> {p['rate']} %")
+        print(
+            f"{p['month']} | {p['symbol']} | price={p['price']} | vol={p['volume']} -> {p['rate']} %"
+        )
 
     print(f"\n💾 Wrote JSON: {OUT_PATH} ({len(curve)} points)")
 
