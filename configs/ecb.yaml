@@ -1,0 +1,9 @@
+bank:
+  code: ECB
+  name: European Central Bank
+
+current_rate:
+  value: 2.15
+
+futures:
+  price_formula: "100_minus_rate"
