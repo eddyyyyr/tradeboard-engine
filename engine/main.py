@@ -1,6 +1,14 @@
+# engine/main.py
+
+from __future__ import annotations
+
+import csv
+from pathlib import Path
+
 from .load_config import load_config
-from .calc_implied import compute_implied_curve_from_rows
-from datetime import date
+
+
+CSV_PATH = Path("data/futures/fed_funds.csv")
 
 
 def main():
@@ -10,33 +18,29 @@ def main():
     print("Bank:", fed["bank"]["name"])
     print("Current rate:", fed["current_rate"]["value"])
 
-    # --- Futures fictives (test moteur) ---
-    futures_rows = [
-        {
-            "month": "2026-03",
-            "price": 95.25,
-            "open_interest": 120000,
-            "volume": 45000,
-            "bid_ask_spread_bp": 1.5,
-        },
-        {
-            "contract_month": date(2026, 4, 1),
-            "price": 95.38,
-            "open_interest": 90000,
-            "volume": 28000,
-            "bid_ask_spread_bp": 2.0,
-        },
-    ]
+    # 1) Lire le CSV Barchart (uploadé sur GitHub)
+    if not CSV_PATH.exists():
+        raise FileNotFoundError(f"CSV not found: {CSV_PATH} (check path + commit)")
 
-    # ✅ calc_implied.py attend d'abord "config" (dict), puis "rows" (list)
-    implied_curve = compute_implied_curve_from_rows(
-        fed,
-        futures_rows,
-    )
+    rows = []
+    with CSV_PATH.open("r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        for r in reader:
+            # Colonnes Barchart: Symbol, Name, Latest, Change, %Change, Open, High, Low, Volume, Time
+            rows.append(
+                {
+                    "symbol": (r.get("Symbol") or "").strip(),
+                    "name": (r.get("Name") or "").strip(),
+                    "latest": (r.get("Latest") or "").strip(),
+                    "volume": (r.get("Volume") or "").strip(),
+                    "time": (r.get("Time") or "").strip(),
+                }
+            )
 
-    print("\n📈 Implied rate curve:")
-    for point in implied_curve:
-        print(point)
+    print(f"\n📄 Loaded CSV: {CSV_PATH} ({len(rows)} rows)")
+    print("🔎 Preview (first 10 rows):")
+    for r in rows[:10]:
+        print(r)
 
 
 if __name__ == "__main__":
