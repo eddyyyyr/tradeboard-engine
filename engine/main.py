@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+from datetime import datetime
 from pathlib import Path
 
 from .load_config import load_config
@@ -98,6 +99,18 @@ def implied_rate_from_price(price: float, price_formula: str) -> float:
     raise ValueError(f"Unknown price_formula: {price_formula}")
 
 
+def month_to_int(ym: str) -> int:
+    # "2026-02" -> 202602
+    y, m = ym.split("-")
+    return int(y) * 100 + int(m)
+
+
+def current_month_int() -> int:
+    # UTC pour éviter les surprises de timezone
+    now = datetime.utcnow()
+    return now.year * 100 + now.month
+
+
 def load_csv_rows(csv_path: Path) -> list[dict]:
     """
     Lit le CSV Barchart (Symbol, Name, Latest, Volume, ...)
@@ -141,16 +154,22 @@ def pick_one_per_month_max_volume(rows: list[dict]) -> list[dict]:
 
 
 def build_curve(picked: list[dict], price_formula: str) -> list[dict]:
+    """
+    ✅ On retire les mois passés automatiquement (>= mois courant).
+    """
+    cur = current_month_int()
+    picked = [r for r in picked if month_to_int(r["month"]) >= cur]
+
     curve: list[dict] = []
     for r in picked:
         rate = implied_rate_from_price(r["price"], price_formula)
         curve.append(
             {
-                "month": r["month"],      # "2026-06"
-                "rate": round(rate, 4),   # 3.51
-                "symbol": r["symbol"],    # "ZQM26"
-                "price": r["price"],      # 96.49
-                "volume": r["volume"],    # 4308
+                "month": r["month"],        # "2026-06"
+                "rate": round(rate, 4),     # 3.51
+                "symbol": r["symbol"],      # "ZQM26"
+                "price": r["price"],        # 96.49
+                "volume": r["volume"],      # 4308
                 "name": r.get("name", ""),  # utile debug
             }
         )
