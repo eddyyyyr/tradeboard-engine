@@ -1,114 +1,114 @@
 [
   {
-    "month": "2025-09",
-    "rate": 4.0866,
-    "symbol": "SQU25",
-    "price": 95.9134,
-    "volume": 9511
-  },
-  {
-    "month": "2025-10",
-    "rate": 3.9236,
-    "symbol": "SQV25",
-    "price": 96.0764,
-    "volume": 3
-  },
-  {
     "month": "2025-11",
     "rate": 3.8775,
     "symbol": "ZQX25",
     "price": 96.1225,
-    "volume": 20674
+    "volume": 20674,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2025-12",
-    "rate": 3.69,
-    "symbol": "SQZ25",
-    "price": 96.31,
-    "volume": 51336
+    "rate": 3.721,
+    "symbol": "ZQZ25",
+    "price": 96.279,
+    "volume": 0,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2026-01",
-    "rate": 3.6375,
+    "rate": 3.64,
     "symbol": "ZQF26",
-    "price": 96.3625,
-    "volume": 21419
+    "price": 96.36,
+    "volume": 989,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2026-02",
     "rate": 3.635,
     "symbol": "ZQG26",
     "price": 96.365,
-    "volume": 10007
+    "volume": 32791,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2026-03",
-    "rate": 3.625,
-    "symbol": "J8H26",
-    "price": 96.375,
-    "volume": 86891
+    "rate": 3.615,
+    "symbol": "ZQH26",
+    "price": 96.385,
+    "volume": 13658,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2026-04",
-    "rate": 3.605,
+    "rate": 3.6,
     "symbol": "ZQJ26",
-    "price": 96.395,
-    "volume": 6379
+    "price": 96.4,
+    "volume": 20341,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2026-05",
-    "rate": 3.565,
+    "rate": 3.55,
     "symbol": "ZQK26",
-    "price": 96.435,
-    "volume": 26308
+    "price": 96.45,
+    "volume": 37344,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2026-06",
-    "rate": 3.47,
-    "symbol": "J8M26",
-    "price": 96.53,
-    "volume": 106611
+    "rate": 3.495,
+    "symbol": "ZQM26",
+    "price": 96.505,
+    "volume": 39337,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2026-07",
-    "rate": 3.445,
+    "rate": 3.42,
     "symbol": "ZQN26",
-    "price": 96.555,
-    "volume": 23105
+    "price": 96.58,
+    "volume": 43343,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2026-08",
-    "rate": 3.37,
+    "rate": 3.34,
     "symbol": "ZQQ26",
-    "price": 96.63,
-    "volume": 4531
+    "price": 96.66,
+    "volume": 24673,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2026-09",
-    "rate": 2.0,
-    "symbol": "IMU26",
-    "price": 98.0,
-    "volume": 156661
+    "rate": 3.29,
+    "symbol": "ZQU26",
+    "price": 96.71,
+    "volume": 7640,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2026-10",
-    "rate": 3.265,
+    "rate": 3.23,
     "symbol": "ZQV26",
-    "price": 96.735,
-    "volume": 2296
+    "price": 96.77,
+    "volume": 17719,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2026-11",
-    "rate": 3.215,
+    "rate": 3.175,
     "symbol": "ZQX26",
-    "price": 96.785,
-    "volume": 1797
+    "price": 96.825,
+    "volume": 8662,
+    "name": "30-Day Fed Funds"
   },
   {
     "month": "2026-12",
-    "rate": 2.02,
-    "symbol": "IMZ26",
-    "price": 97.98,
-    "volume": 84973
+    "rate": 3.14,
+    "symbol": "ZQZ26",
+    "price": 96.86,
+    "volume": 6259,
+    "name": "30-Day Fed Funds"
   }
 ]

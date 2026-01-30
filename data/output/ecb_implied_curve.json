@@ -1,114 +1,74 @@
 [
   {
-    "month": "2025-09",
-    "rate": 4.0866,
-    "symbol": "SQU25",
-    "price": 95.9134,
-    "volume": 9511
-  },
-  {
-    "month": "2025-10",
-    "rate": 3.9236,
-    "symbol": "SQV25",
-    "price": 96.0764,
-    "volume": 3
-  },
-  {
     "month": "2025-11",
-    "rate": 3.8775,
-    "symbol": "ZQX25",
-    "price": 96.1225,
-    "volume": 20674
+    "rate": 100.0,
+    "symbol": "CU7X25",
+    "price": 0.0,
+    "volume": 0,
+    "name": "ECB Dated ESTR Futures"
   },
   {
     "month": "2025-12",
-    "rate": 3.69,
-    "symbol": "SQZ25",
-    "price": 96.31,
-    "volume": 51336
-  },
-  {
-    "month": "2026-01",
-    "rate": 3.6375,
-    "symbol": "ZQF26",
-    "price": 96.3625,
-    "volume": 21419
+    "rate": 2.072,
+    "symbol": "IMZ25",
+    "price": 97.928,
+    "volume": 37901,
+    "name": "3-Month Euribor"
   },
   {
     "month": "2026-02",
-    "rate": 3.635,
-    "symbol": "ZQG26",
-    "price": 96.365,
-    "volume": 10007
+    "rate": 1.9325,
+    "symbol": "CU7G26",
+    "price": 98.0675,
+    "volume": 7,
+    "name": "ECB Dated ESTR Futures"
   },
   {
     "month": "2026-03",
-    "rate": 3.625,
-    "symbol": "J8H26",
-    "price": 96.375,
-    "volume": 86891
-  },
-  {
-    "month": "2026-04",
-    "rate": 3.605,
-    "symbol": "ZQJ26",
-    "price": 96.395,
-    "volume": 6379
+    "rate": 2.05,
+    "symbol": "IMH26",
+    "price": 97.95,
+    "volume": 62570,
+    "name": "3-Month Euribor"
   },
   {
     "month": "2026-05",
-    "rate": 3.565,
-    "symbol": "ZQK26",
-    "price": 96.435,
-    "volume": 26308
+    "rate": 1.9175,
+    "symbol": "CU7K26",
+    "price": 98.0825,
+    "volume": 193,
+    "name": "ECB Dated ESTR Futures"
   },
   {
     "month": "2026-06",
-    "rate": 3.47,
-    "symbol": "J8M26",
-    "price": 96.53,
-    "volume": 106611
-  },
-  {
-    "month": "2026-07",
-    "rate": 3.445,
-    "symbol": "ZQN26",
-    "price": 96.555,
-    "volume": 23105
-  },
-  {
-    "month": "2026-08",
-    "rate": 3.37,
-    "symbol": "ZQQ26",
-    "price": 96.63,
-    "volume": 4531
+    "rate": 2.02,
+    "symbol": "IMM26",
+    "price": 97.98,
+    "volume": 90442,
+    "name": "3-Month Euribor"
   },
   {
     "month": "2026-09",
-    "rate": 2.0,
+    "rate": 2.01,
     "symbol": "IMU26",
-    "price": 98.0,
-    "volume": 156661
-  },
-  {
-    "month": "2026-10",
-    "rate": 3.265,
-    "symbol": "ZQV26",
-    "price": 96.735,
-    "volume": 2296
+    "price": 97.99,
+    "volume": 106227,
+    "name": "3-Month Euribor"
   },
   {
     "month": "2026-11",
-    "rate": 3.215,
-    "symbol": "ZQX26",
-    "price": 96.785,
-    "volume": 1797
+    "rate": 1.89,
+    "symbol": "CU7X26",
+    "price": 98.11,
+    "volume": 0,
+    "name": "ECB Dated ESTR Futures"
   },
   {
     "month": "2026-12",
-    "rate": 2.02,
+    "rate": 2.03,
     "symbol": "IMZ26",
-    "price": 97.98,
-    "volume": 84973
+    "price": 97.97,
+    "volume": 138673,
+    "name": "3-Month Euribor"
   }
 ]
