@@ -8,6 +8,24 @@ from pathlib import Path
 
 from .load_config import load_config
 
+# ----------------------------
+# ✅ 1 CSV global (watchlist)
+# ----------------------------
+CSV_PATH = Path("data/futures/watchlist.csv")
+OUT_DIR = Path("data/output")
+
+# Filtrage par banque via la colonne "Name" du CSV
+# (ajuste ECB si besoin selon le libellé exact dans ton fichier)
+NAME_FILTERS = {
+    "FED": ["30-Day Fed Funds"],
+    "BOE": ["3-Month SONIA"],
+    "ECB": ["€STR", "ESTR", "Euribor", "EURIBOR"],  # fallback: à affiner si besoin
+    # Exemples si tu ajoutes après :
+    # "SNB": ["3-Month SARON"],
+    # "BOC": ["CORRA 3-Month", "CORRA 3-Month"],
+    # "BOJ": ["3-Month TONA", "TONA"],
+}
+
 # Mapping des codes mois futures (H=Mar, M=Jun, U=Sep, Z=Dec, etc.)
 MONTH_CODE = {
     "F": 1,   # Jan
@@ -82,7 +100,7 @@ def implied_rate_from_price(price: float, price_formula: str) -> float:
 
 def load_csv_rows(csv_path: Path) -> list[dict]:
     """
-    Lit le CSV Barchart (Symbol, Latest, Volume, ...)
+    Lit le CSV Barchart (Symbol, Name, Latest, Volume, ...)
     et retourne une liste de rows normalisées.
     """
     raw: list[dict] = []
@@ -90,6 +108,7 @@ def load_csv_rows(csv_path: Path) -> list[dict]:
         reader = csv.DictReader(f)
         for r in reader:
             symbol = (r.get("Symbol") or "").strip()
+            name = (r.get("Name") or "").strip()
             latest = to_float(r.get("Latest") or "")
             volume = to_int(r.get("Volume") or "")
 
@@ -100,6 +119,7 @@ def load_csv_rows(csv_path: Path) -> list[dict]:
             raw.append(
                 {
                     "symbol": symbol,
+                    "name": name,
                     "month": month,
                     "price": latest,
                     "volume": volume or 0,
@@ -131,12 +151,28 @@ def build_curve(picked: list[dict], price_formula: str) -> list[dict]:
                 "symbol": r["symbol"],    # "ZQM26"
                 "price": r["price"],      # 96.49
                 "volume": r["volume"],    # 4308
+                "name": r.get("name", ""),  # utile debug
             }
         )
     return curve
 
 
-def run_bank(bank_code: str) -> None:
+def filter_rows_for_bank(rows: list[dict], bank_code: str) -> list[dict]:
+    filters = NAME_FILTERS.get(bank_code, [])
+    if not filters:
+        return []
+
+    filters_l = [f.lower() for f in filters]
+
+    filtered: list[dict] = []
+    for r in rows:
+        nm = (r.get("name") or "").lower()
+        if any(f in nm for f in filters_l):
+            filtered.append(r)
+    return filtered
+
+
+def run_bank(bank_code: str, all_rows: list[dict]) -> None:
     cfg = load_config(bank_code)
 
     bank_name = cfg["bank"]["name"]
@@ -144,27 +180,26 @@ def run_bank(bank_code: str) -> None:
     futures_cfg = cfg.get("futures", {})
     price_formula = futures_cfg.get("price_formula", "100_minus_rate")
 
-    # Convention fichiers:
-    # data/futures/<bankcode_lower>_funds.csv
     code_lower = bank_code.lower()
-    csv_path = Path(f"data/futures/{code_lower}_funds.csv")
-    out_path = Path(f"data/output/{code_lower}_implied_curve.json")
+    out_path = OUT_DIR / f"{code_lower}_implied_curve.json"
 
     print(f"\n==============================")
     print(f"✅ {bank_code} loaded")
     print(f"Bank: {bank_name}")
     print(f"Current rate: {current_rate}")
-    print(f"CSV: {csv_path}")
+    print(f"CSV: {CSV_PATH}")
     print(f"Price formula: {price_formula}")
+    print(f"Name filters: {NAME_FILTERS.get(bank_code)}")
 
-    if not csv_path.exists():
-        raise FileNotFoundError(f"CSV not found: {csv_path} (check path + commit)")
+    filtered = filter_rows_for_bank(all_rows, bank_code)
+    print(f"✅ Filtered rows: {len(filtered)}")
 
-    rows = load_csv_rows(csv_path)
-    print(f"✅ Parsed rows: {len(rows)}")
-
-    picked = pick_one_per_month_max_volume(rows)
-    curve = build_curve(picked, price_formula)
+    if len(filtered) == 0:
+        print(f"⚠️ No rows matched for {bank_code}. JSON will be empty.")
+        curve: list[dict] = []
+    else:
+        picked = pick_one_per_month_max_volume(filtered)
+        curve = build_curve(picked, price_formula)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(curve, indent=2), encoding="utf-8")
@@ -182,8 +217,14 @@ def main():
     # Banque(s) activées pour l’instant
     bank_codes = ["FED", "ECB", "BOE"]
 
+    if not CSV_PATH.exists():
+        raise FileNotFoundError(f"CSV not found: {CSV_PATH} (check path + commit)")
+
+    all_rows = load_csv_rows(CSV_PATH)
+    print(f"✅ Parsed total rows: {len(all_rows)}")
+
     for code in bank_codes:
-        run_bank(code)
+        run_bank(code, all_rows)
 
 
 if __name__ == "__main__":
