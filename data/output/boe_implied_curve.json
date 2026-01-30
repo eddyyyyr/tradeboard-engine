@@ -1,21 +1,5 @@
 [
   {
-    "month": "2025-09",
-    "rate": 3.9886,
-    "symbol": "J8U25",
-    "price": 96.0114,
-    "volume": 0,
-    "name": "3-Month SONIA"
-  },
-  {
-    "month": "2025-12",
-    "rate": 3.745,
-    "symbol": "J8Z25",
-    "price": 96.255,
-    "volume": 1501,
-    "name": "3-Month SONIA"
-  },
-  {
     "month": "2026-03",
     "rate": 3.62,
     "symbol": "J8H26",

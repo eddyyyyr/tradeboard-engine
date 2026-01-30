@@ -1,21 +1,5 @@
 [
   {
-    "month": "2025-11",
-    "rate": 100.0,
-    "symbol": "CU7X25",
-    "price": 0.0,
-    "volume": 0,
-    "name": "ECB Dated ESTR Futures"
-  },
-  {
-    "month": "2025-12",
-    "rate": 2.072,
-    "symbol": "IMZ25",
-    "price": 97.928,
-    "volume": 37901,
-    "name": "3-Month Euribor"
-  },
-  {
     "month": "2026-02",
     "rate": 1.9325,
     "symbol": "CU7G26",

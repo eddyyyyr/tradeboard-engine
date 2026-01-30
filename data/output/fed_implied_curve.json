@@ -1,21 +1,5 @@
 [
   {
-    "month": "2025-11",
-    "rate": 3.8775,
-    "symbol": "ZQX25",
-    "price": 96.1225,
-    "volume": 20674,
-    "name": "30-Day Fed Funds"
-  },
-  {
-    "month": "2025-12",
-    "rate": 3.721,
-    "symbol": "ZQZ25",
-    "price": 96.279,
-    "volume": 0,
-    "name": "30-Day Fed Funds"
-  },
-  {
     "month": "2026-01",
     "rate": 3.64,
     "symbol": "ZQF26",
