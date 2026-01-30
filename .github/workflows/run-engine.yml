@@ -5,7 +5,9 @@ permissions:
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
+    paths-ignore:
+      - "data/output/**"
   workflow_dispatch:
 
 jobs:
@@ -14,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,10 +33,18 @@ jobs:
         run: |
           python3 -m engine.main
 
+      - name: Debug output files
+        run: |
+          echo "Listing data/output:"
+          ls -la data/output || true
+
       - name: Commit generated JSON
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add data/output/*.json
+
+          # Force add in case data/output is gitignored
+          git add -f data/output/*.json
+
           git commit -m "Update implied curves JSON" || echo "Nothing to commit"
           git push
