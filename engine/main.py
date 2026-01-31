@@ -201,17 +201,19 @@ def meeting_months_from_config(cfg: dict) -> tuple[set[str], dict[str, str]]:
     - set des mois "YYYY-MM"
     - mapping month -> meeting_date (première date du mois)
     """
-    dates = (
-        cfg.get("meetings", {}).get("dates", [])
-        if isinstance(cfg.get("meetings", {}), dict)
-        else []
-    )
+    meetings = cfg.get("meetings", {})
+    if not isinstance(meetings, dict):
+        return set(), {}
+
+    dates = meetings.get("dates", []) or []
     months: set[str] = set()
     month_to_date: dict[str, str] = {}
 
-    for d in dates or []:
+    for d in dates:
+        if not isinstance(d, str) or len(d) < 7:
+            continue
+        # support "YYYY-MM-DD"
         try:
-            # support "YYYY-MM-DD"
             y = int(d[0:4])
             m = int(d[5:7])
             month = f"{y:04d}-{m:02d}"
