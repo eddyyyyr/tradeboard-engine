@@ -1,65 +1,58 @@
 [
   {
+    "meetingDate": "2026-03-18",
     "month": "2026-03",
-    "rate": 3.615,
-    "symbol": "ZQH26",
-    "price": 96.385,
-    "volume": 13658,
-    "name": "30-Day Fed Funds",
-    "meetingDate": "2026-03-18"
+    "rateAfter": 2.5,
+    "rateRaw": 2.540357,
+    "weightBefore": 0.548387,
+    "weightAfter": 0.451613
   },
   {
+    "meetingDate": "2026-04-29",
     "month": "2026-04",
-    "rate": 3.6,
-    "symbol": "ZQJ26",
-    "price": 96.4,
-    "volume": 20341,
-    "name": "30-Day Fed Funds",
-    "meetingDate": "2026-04-29"
+    "rateAfter": 19.0,
+    "rateRaw": 19.0,
+    "weightBefore": 0.933333,
+    "weightAfter": 0.066667
   },
   {
+    "meetingDate": "2026-06-17",
     "month": "2026-06",
-    "rate": 3.495,
-    "symbol": "ZQM26",
-    "price": 96.505,
-    "volume": 39337,
-    "name": "30-Day Fed Funds",
-    "meetingDate": "2026-06-17"
+    "rateAfter": -14.25,
+    "rateRaw": -14.225,
+    "weightBefore": 0.533333,
+    "weightAfter": 0.466667
   },
   {
+    "meetingDate": "2026-07-29",
     "month": "2026-07",
-    "rate": 3.42,
-    "symbol": "ZQN26",
-    "price": 96.58,
-    "volume": 43343,
-    "name": "30-Day Fed Funds",
-    "meetingDate": "2026-07-29"
+    "rateAfter": 168.25,
+    "rateRaw": 168.34,
+    "weightBefore": 0.903226,
+    "weightAfter": 0.096774
   },
   {
+    "meetingDate": "2026-09-16",
     "month": "2026-09",
-    "rate": 3.29,
-    "symbol": "ZQU26",
-    "price": 96.71,
-    "volume": 7640,
-    "name": "30-Day Fed Funds",
-    "meetingDate": "2026-09-16"
+    "rateAfter": -161.75,
+    "rateRaw": -161.67,
+    "weightBefore": 0.5,
+    "weightAfter": 0.5
   },
   {
+    "meetingDate": "2026-10-28",
     "month": "2026-10",
-    "rate": 3.23,
-    "symbol": "ZQV26",
-    "price": 96.77,
-    "volume": 17719,
-    "name": "30-Day Fed Funds",
-    "meetingDate": "2026-10-28"
+    "rateAfter": 1116.75,
+    "rateRaw": 1116.845,
+    "weightBefore": 0.870968,
+    "weightAfter": 0.129032
   },
   {
+    "meetingDate": "2026-12-16",
     "month": "2026-12",
-    "rate": 3.14,
-    "symbol": "ZQZ26",
-    "price": 96.86,
-    "volume": 6259,
-    "name": "30-Day Fed Funds",
-    "meetingDate": "2026-12-16"
+    "rateAfter": -1040.75,
+    "rateRaw": -1040.869375,
+    "weightBefore": 0.483871,
+    "weightAfter": 0.516129
   }
 ]
