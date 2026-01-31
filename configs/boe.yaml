@@ -1,6 +1,37 @@
 bank:
-  code: BOE
-  name: Bank of England
+  code: "BOE"
+  name: "Bank of England"
+  country: "United Kingdom"
+  currency: "GBP"
 
 current_rate:
   value: 3.75
+  increment_bp: 25
+  min_rate: 0.00
+  max_rate: 10.00
+
+futures:
+  source: "barchart"
+  contract_type: "sonia"
+  frequency: "monthly"
+  update_policy: "manual_csv"
+  price_formula: "100_minus_rate"
+  csv_path: "data/futures/watchlist.csv"
+  name_filters:
+    - "3-Month SONIA"
+
+meetings:
+  timezone: "Europe/London"
+  dates_2026:
+    - date: "2026-09-17"
+      label: "September 2026"
+    - date: "2026-11-05"
+      label: "November 2026"
+    - date: "2026-12-17"
+      label: "December 2026"
+
+  keep_months_from_meetings: true
+
+metadata:
+  config_version: "1.1"
+  notes: "BOE config with 2026 meeting dates (from screenshot partial)."
