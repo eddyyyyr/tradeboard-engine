@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .load_config import load_config
+from .meeting_expected import compute_after_meeting_curve
 
 # ----------------------------
 # ✅ 1 CSV global (watchlist)
@@ -191,7 +192,7 @@ def meeting_months_from_config(cfg: dict) -> tuple[set[str], dict[str, str]]:
     """
     Lit les dates de réunions depuis config si présentes.
 
-    Format attendu dans configs/<bank>.yaml (recommandé) :
+    Format attendu :
     meetings:
       dates:
         - "2026-02-05"
@@ -212,7 +213,6 @@ def meeting_months_from_config(cfg: dict) -> tuple[set[str], dict[str, str]]:
     for d in dates:
         if not isinstance(d, str) or len(d) < 7:
             continue
-        # support "YYYY-MM-DD"
         try:
             y = int(d[0:4])
             m = int(d[5:7])
@@ -221,7 +221,6 @@ def meeting_months_from_config(cfg: dict) -> tuple[set[str], dict[str, str]]:
             continue
 
         months.add(month)
-        # si plusieurs dates dans le même mois, garde la première
         if month not in month_to_date:
             month_to_date[month] = d
 
@@ -232,23 +231,24 @@ def filter_curve_to_meetings(
     curve: list[dict],
     meeting_months: set[str],
     month_to_date: dict[str, str],
+    current_rate: float,
+    increment_bp: int,
 ) -> list[dict]:
     """
-    Ne garde que les points dont le mois correspond à un mois de réunion.
-    Ajoute meetingDate si connu.
+    OPTION B (precise): transforme la courbe mensuelle en points "après réunion"
+    via pondération jours avant/après.
     """
     if not meeting_months:
         return []
 
-    out: list[dict] = []
-    for p in curve:
-        m = p.get("month")
-        if m in meeting_months:
-            pp = dict(p)
-            if m in month_to_date:
-                pp["meetingDate"] = month_to_date[m]
-            out.append(pp)
-    return out
+    meeting_dates = sorted(month_to_date.values())
+
+    return compute_after_meeting_curve(
+        monthly_curve=curve,
+        meeting_dates=meeting_dates,
+        current_rate=current_rate,
+        increment_bp=increment_bp,
+    )
 
 
 def write_json(path: Path, data: object) -> None:
@@ -260,7 +260,9 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
     cfg = load_config(bank_code)
 
     bank_name = cfg["bank"]["name"]
-    current_rate = cfg["current_rate"]["value"]
+    current_rate = float(cfg["current_rate"]["value"])
+    increment_bp = int(cfg.get("current_rate", {}).get("increment_bp", 25))
+
     futures_cfg = cfg.get("futures", {})
     price_formula = futures_cfg.get("price_formula", "100_minus_rate")
 
@@ -276,6 +278,7 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
     print(f"CSV: {CSV_PATH}")
     print(f"Price formula: {price_formula}")
     print(f"Name filters: {NAME_FILTERS.get(bank_code)}")
+    print(f"Increment bp: {increment_bp}")
 
     filtered = filter_rows_for_bank(all_rows, bank_code)
     print(f"✅ Filtered rows: {len(filtered)}")
@@ -291,9 +294,15 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
         # 1) supprime les dates passées
         curve = strip_past_months(curve)
 
-        # 2) filtre par réunions (si config contient meetings.dates)
+        # 2) OPTION B: points après réunion (pondération)
         meeting_months, month_to_date = meeting_months_from_config(cfg)
-        meetings_curve = filter_curve_to_meetings(curve, meeting_months, month_to_date)
+        meetings_curve = filter_curve_to_meetings(
+            curve=curve,
+            meeting_months=meeting_months,
+            month_to_date=month_to_date,
+            current_rate=current_rate,
+            increment_bp=increment_bp,
+        )
 
     # ✅ Écrit les 2 fichiers
     write_json(out_curve_path, curve)
@@ -306,11 +315,11 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
         )
     print(f"\n💾 Wrote JSON: {out_curve_path} ({len(curve)} points)")
 
-    print("\n📅 Meeting curve (future + meeting months only):")
+    print("\n📅 Meeting curve (Option B):")
     for p in meetings_curve[:12]:
         md = p.get("meetingDate", "n/a")
         print(
-            f"{p['month']} (meeting {md}) | {p['symbol']} | price={p['price']} | vol={p['volume']} -> {p['rate']} %"
+            f"{p.get('meetingDate', md)} | exp_rate={p.get('expectedRate')} | bias={p.get('bias')} | probs={p.get('probabilities')}"
         )
     print(f"\n💾 Wrote JSON: {out_meetings_path} ({len(meetings_curve)} points)")
 
