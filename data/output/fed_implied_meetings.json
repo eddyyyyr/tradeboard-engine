@@ -4,6 +4,8 @@
     "month": "2026-03",
     "rateAfter": 2.5,
     "rateRaw": 2.540357,
+    "moveAfterBps": -200.0,
+    "moveRawBps": -195.9643,
     "weightBefore": 0.548387,
     "weightAfter": 0.451613
   },
@@ -12,6 +14,8 @@
     "month": "2026-04",
     "rateAfter": 19.0,
     "rateRaw": 19.0,
+    "moveAfterBps": 1650.0,
+    "moveRawBps": 1650.0,
     "weightBefore": 0.933333,
     "weightAfter": 0.066667
   },
@@ -20,6 +24,8 @@
     "month": "2026-06",
     "rateAfter": -14.25,
     "rateRaw": -14.225,
+    "moveAfterBps": -3325.0,
+    "moveRawBps": -3322.5,
     "weightBefore": 0.533333,
     "weightAfter": 0.466667
   },
@@ -28,6 +34,8 @@
     "month": "2026-07",
     "rateAfter": 168.25,
     "rateRaw": 168.34,
+    "moveAfterBps": 18250.0,
+    "moveRawBps": 18259.0,
     "weightBefore": 0.903226,
     "weightAfter": 0.096774
   },
@@ -36,6 +44,8 @@
     "month": "2026-09",
     "rateAfter": -161.75,
     "rateRaw": -161.67,
+    "moveAfterBps": -33000.0,
+    "moveRawBps": -32992.0,
     "weightBefore": 0.5,
     "weightAfter": 0.5
   },
@@ -44,6 +54,8 @@
     "month": "2026-10",
     "rateAfter": 1116.75,
     "rateRaw": 1116.845,
+    "moveAfterBps": 127850.0,
+    "moveRawBps": 127859.5,
     "weightBefore": 0.870968,
     "weightAfter": 0.129032
   },
@@ -52,6 +64,8 @@
     "month": "2026-12",
     "rateAfter": -1040.75,
     "rateRaw": -1040.869375,
+    "moveAfterBps": -215750.0,
+    "moveRawBps": -215761.9375,
     "weightBefore": 0.483871,
     "weightAfter": 0.516129
   }

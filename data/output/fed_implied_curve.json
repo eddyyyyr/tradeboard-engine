@@ -1,13 +1,5 @@
 [
   {
-    "month": "2026-01",
-    "rate": 3.64,
-    "symbol": "ZQF26",
-    "price": 96.36,
-    "volume": 989,
-    "name": "30-Day Fed Funds"
-  },
-  {
     "month": "2026-02",
     "rate": 3.635,
     "symbol": "ZQG26",
