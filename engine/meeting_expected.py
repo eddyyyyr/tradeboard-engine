@@ -147,4 +147,5 @@ def compute_after_meeting_curve(
         # Le taux "après" devient le taux "avant" du meeting suivant
         prev_after_rate = float(r_after)
 
-    return out
+    # 🔒 UX + stabilité : limite aux 6 prochaines réunions
+    return out[:6]
