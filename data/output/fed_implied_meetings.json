@@ -58,15 +58,5 @@
     "moveRawBps": 12190.75,
     "weightBefore": 0.870968,
     "weightAfter": 0.129032
-  },
-  {
-    "meetingDate": "2026-12-16",
-    "month": "2026-12",
-    "rateAfter": -96.5,
-    "rateRaw": -96.5725,
-    "moveAfterBps": -20600.0,
-    "moveRawBps": -20607.25,
-    "weightBefore": 0.483871,
-    "weightAfter": 0.516129
   }
 ]
