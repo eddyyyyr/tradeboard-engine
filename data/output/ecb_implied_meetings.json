@@ -20,23 +20,53 @@
     "weightAfter": 0.419355
   },
   {
+    "meetingDate": "2026-04-30",
+    "month": "2026-04",
+    "rateAfter": -0.5,
+    "rateRaw": -0.475,
+    "moveAfterBps": -250.0,
+    "moveRawBps": -247.5,
+    "weightBefore": 0.966667,
+    "weightAfter": 0.033333
+  },
+  {
     "meetingDate": "2026-06-18",
     "month": "2026-06",
-    "rateAfter": 2.0,
-    "rateRaw": 2.046154,
-    "moveAfterBps": 0.0,
-    "moveRawBps": 4.6154,
+    "rateAfter": 5.25,
+    "rateRaw": 5.315385,
+    "moveAfterBps": 575.0,
+    "moveRawBps": 581.5385,
     "weightBefore": 0.566667,
     "weightAfter": 0.433333
   },
   {
+    "meetingDate": "2026-07-30",
+    "month": "2026-07",
+    "rateAfter": -45.0,
+    "rateRaw": -44.97,
+    "moveAfterBps": -5025.0,
+    "moveRawBps": -5022.0,
+    "weightBefore": 0.935484,
+    "weightAfter": 0.064516
+  },
+  {
     "meetingDate": "2026-09-16",
     "month": "2026-09",
-    "rateAfter": 2.0,
-    "rateRaw": 2.02,
-    "moveAfterBps": 0.0,
-    "moveRawBps": 2.0,
+    "rateAfter": 49.0,
+    "rateRaw": 49.02,
+    "moveAfterBps": 9400.0,
+    "moveRawBps": 9402.0,
     "weightBefore": 0.5,
     "weightAfter": 0.5
+  },
+  {
+    "meetingDate": "2026-10-28",
+    "month": "2026-10",
+    "rateAfter": -316.0,
+    "rateRaw": -316.1025,
+    "moveAfterBps": -36500.0,
+    "moveRawBps": -36510.25,
+    "weightBefore": 0.870968,
+    "weightAfter": 0.129032
   }
 ]
