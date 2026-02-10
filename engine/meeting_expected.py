@@ -22,8 +22,8 @@ class MeetingPoint:
     rateRaw: float        # ex: 3.4375 (non arrondi)
 
     # ✅ Move en BASIS POINTS (pour l’UI / expected move)
-    moveAfterBps: float  # ex: -31.0
-    moveRawBps: float    # ex: -30.8
+    moveAfterBps: float   # ex: -31.0
+    moveRawBps: float     # ex: -30.8
 
     # Pondération temporelle
     weightBefore: float
@@ -64,6 +64,19 @@ def _round_to_increment(rate: float, increment_bp: int) -> float:
     return round(round(rate / step) * step, 6)
 
 
+def _next_month_ym(ym: str) -> str | None:
+    """
+    "2026-12" -> "2027-01"
+    """
+    try:
+        y, m = _parse_ym(ym)
+        if m == 12:
+            return f"{y+1:04d}-01"
+        return f"{y:04d}-{m+1:02d}"
+    except Exception:
+        return None
+
+
 # ============================================================
 # 🧠 Cœur du moteur "Expected AFTER meeting"
 # ============================================================
@@ -78,9 +91,14 @@ def compute_after_meeting_curve(
     Transforme une courbe mensuelle (contrats futures)
     en courbe "par réunion" (taux APRÈS chaque meeting).
 
-    Hypothèse standard (CME / FedWatch-like) :
+    Hypothèse standard :
       R_month = w_before * R_before + w_after * R_after
       => R_after = (R_month - w_before * R_before) / w_after
+
+    ⚠️ Fix "meetings late month":
+    Si la réunion est trop tard dans le mois (peu de jours après),
+    la formule explose (division par un petit w_after).
+    Dans ce cas, on utilise le mois suivant comme proxy.
     """
 
     # Index mois -> taux mensuel (%)
@@ -101,10 +119,13 @@ def compute_after_meeting_curve(
     # Taux "avant réunion" = dernier taux après réunion connue
     prev_after_rate = float(current_rate)
 
+    # Seuils de stabilité
+    MIN_DAYS_AFTER = 5          # si < 5 jours après meeting dans le mois => proxy mois suivant
+    MAX_ABS_MOVE_BPS = 300.0    # si move > 300 bps => proxy mois suivant (ou clamp)
+
     for d in meeting_dates_sorted:
         ym = _ym_from_date_str(d)
         if ym not in month_to_rate:
-            # Pas de contrat mensuel correspondant → on ignore
             continue
 
         meeting_dt = _parse_date(d)
@@ -113,16 +134,35 @@ def compute_after_meeting_curve(
 
         # Pondérations temporelles
         days_before = meeting_dt.day - 1
+        days_after = dim - days_before
         w_before = days_before / dim
         w_after = 1.0 - w_before
 
         r_month = month_to_rate[ym]
 
-        # Sécurité : meeting le dernier jour du mois
+        # 1) Calcul standard
         if w_after <= 1e-9:
             r_after_raw = r_month
         else:
             r_after_raw = (r_month - (w_before * prev_after_rate)) / w_after
+
+        # 2) Si meeting trop tard OU move absurde -> proxy mois suivant
+        use_proxy = False
+        if days_after < MIN_DAYS_AFTER:
+            use_proxy = True
+
+        move_raw_bps_tmp = (r_after_raw - prev_after_rate) * 100.0
+        if abs(move_raw_bps_tmp) > MAX_ABS_MOVE_BPS:
+            use_proxy = True
+
+        if use_proxy:
+            ym_next = _next_month_ym(ym)
+            if ym_next and ym_next in month_to_rate:
+                r_after_raw = float(month_to_rate[ym_next])
+            else:
+                # fallback soft : on évite de partir en délire
+                # on clamp autour du prev rate
+                r_after_raw = max(min(r_after_raw, prev_after_rate + 3.0), prev_after_rate - 3.0)
 
         # Arrondi à l’incrément officiel
         r_after = _round_to_increment(r_after_raw, increment_bp)
@@ -134,12 +174,12 @@ def compute_after_meeting_curve(
         mp = MeetingPoint(
             meetingDate=d,
             month=ym,
-            rateAfter=round(r_after, 6),
+            rateAfter=round(float(r_after), 6),
             rateRaw=round(float(r_after_raw), 6),
-            moveAfterBps=round(move_after_bps, 2),
-            moveRawBps=round(move_raw_bps, 4),
-            weightBefore=round(w_before, 6),
-            weightAfter=round(w_after, 6),
+            moveAfterBps=round(float(move_after_bps), 2),
+            moveRawBps=round(float(move_raw_bps), 4),
+            weightBefore=round(float(w_before), 6),
+            weightAfter=round(float(w_after), 6),
         )
 
         out.append(mp.to_dict())
@@ -147,5 +187,4 @@ def compute_after_meeting_curve(
         # Le taux "après" devient le taux "avant" du meeting suivant
         prev_after_rate = float(r_after)
 
-    # 🔒 UX + stabilité : limite aux 6 prochaines réunions
-    return out[:6]
+    return out
