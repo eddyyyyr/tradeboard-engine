@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "meetingDate": "2026-02-05",
+    "month": "2026-02",
+    "rateAfter": 2.0,
+    "rateRaw": 1.89625,
+    "moveAfterBps": -15.0,
+    "moveRawBps": -25.375,
+    "weightBefore": 0.142857,
+    "weightAfter": 0.857143
+  },
+  {
+    "meetingDate": "2026-03-19",
+    "month": "2026-03",
+    "rateAfter": 2.0,
+    "rateRaw": 2.119231,
+    "moveAfterBps": 0.0,
+    "moveRawBps": 11.9231,
+    "weightBefore": 0.580645,
+    "weightAfter": 0.419355
+  },
+  {
+    "meetingDate": "2026-06-18",
+    "month": "2026-06",
+    "rateAfter": 2.0,
+    "rateRaw": 2.046154,
+    "moveAfterBps": 0.0,
+    "moveRawBps": 4.6154,
+    "weightBefore": 0.566667,
+    "weightAfter": 0.433333
+  },
+  {
+    "meetingDate": "2026-09-16",
+    "month": "2026-09",
+    "rateAfter": 2.0,
+    "rateRaw": 2.02,
+    "moveAfterBps": 0.0,
+    "moveRawBps": 2.0,
+    "weightBefore": 0.5,
+    "weightAfter": 0.5
+  }
+]

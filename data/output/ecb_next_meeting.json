@@ -1,1 +1,24 @@
-{}
+{
+  "meetingDate": "2026-02-05",
+  "month": "2026-02",
+  "currentRate": 2.15,
+  "expectedRateAfterRaw": 1.89625,
+  "expectedMoveBps": -25.37,
+  "distribution": {
+    "1.75": 0.415,
+    "2.0": 0.585
+  },
+  "probabilities": {
+    "cut": 0.415,
+    "hold": 0.585,
+    "hike": 0.0
+  },
+  "mainScenario": {
+    "rate": 2.0,
+    "prob": 0.585
+  },
+  "altScenario": {
+    "rate": 1.75,
+    "prob": 0.415
+  }
+}
