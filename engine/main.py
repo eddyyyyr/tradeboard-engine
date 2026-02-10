@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .load_config import load_config
 from .meeting_expected import compute_after_meeting_curve
+from .next_meeting import build_next_meeting_summary
 
 # ----------------------------
 # ✅ 1 CSV global (watchlist)
@@ -270,6 +271,7 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
 
     out_curve_path = OUT_DIR / f"{code_lower}_implied_curve.json"
     out_meetings_path = OUT_DIR / f"{code_lower}_implied_meetings.json"
+    out_next_path = OUT_DIR / f"{code_lower}_next_meeting.json"
 
     print(f"\n==============================")
     print(f"✅ {bank_code} loaded")
@@ -287,6 +289,7 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
         print(f"⚠️ No rows matched for {bank_code}. JSON will be empty.")
         curve: list[dict] = []
         meetings_curve: list[dict] = []
+        next_meeting: dict = {}
     else:
         picked = pick_one_per_month_max_volume(filtered)
         curve = build_curve(picked, price_formula)
@@ -304,9 +307,13 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
             increment_bp=increment_bp,
         )
 
-    # ✅ Écrit les 2 fichiers
+        # 3) Next meeting summary (Financial Source-like)
+        next_meeting = build_next_meeting_summary(meetings_curve, cfg)
+
+    # ✅ Écrit les 3 fichiers
     write_json(out_curve_path, curve)
     write_json(out_meetings_path, meetings_curve)
+    write_json(out_next_path, next_meeting)
 
     print("\n📈 Monthly curve (future months only):")
     for p in curve[:12]:
@@ -319,9 +326,16 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
     for p in meetings_curve[:12]:
         md = p.get("meetingDate", "n/a")
         print(
-            f"{p.get('meetingDate', md)} | exp_rate={p.get('expectedRate')} | bias={p.get('bias')} | probs={p.get('probabilities')}"
+            f"{md} | rateAfter={p.get('rateAfter')} | moveAfterBps={p.get('moveAfterBps')} | w_after={p.get('weightAfter')}"
         )
     print(f"\n💾 Wrote JSON: {out_meetings_path} ({len(meetings_curve)} points)")
+
+    if next_meeting:
+        print("\n🎯 Next meeting summary:")
+        print(
+            f"date={next_meeting.get('meetingDate')} | expectedMoveBps={next_meeting.get('expectedMoveBps')} | probs={next_meeting.get('probabilities')}"
+        )
+    print(f"\n💾 Wrote JSON: {out_next_path}")
 
 
 def main():
