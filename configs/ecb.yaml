@@ -1,29 +1,28 @@
-# Federal Reserve – TradeBoard Engine
+# European Central Bank – TradeBoard Engine
+
 bank:
-  code: "FED"
-  name: "Federal Reserve"
-  country: "United States"
-  currency: "USD"
+  code: "ECB"
+  name: "European Central Bank"
+  country: "Euro Area"
+  currency: "EUR"
 
 current_rate:
-  value: 4.50
-  effective_date: "2025-12-18"
-  last_change_bp: -25
-  last_change_date: "2025-12-18"
+  value: 2.15
   increment_bp: 25
   min_rate: 0.00
   max_rate: 10.00
 
 futures:
   source: "barchart"
-  contract_type: "fed_funds"
+  contract_type: "estr"
   frequency: "monthly"
   update_policy: "manual_csv"
   price_formula: "100_minus_rate"
 
+# ✅ Calendrier officiel BCE 2026
 meetings:
-  timezone: "America/New_York"
-  days:
+  timezone: "Europe/Frankfurt"
+  dates:
     - "2026-02-05"
     - "2026-03-19"
     - "2026-04-30"
@@ -34,4 +33,4 @@ meetings:
 
 metadata:
   config_version: "1.1"
-  notes: "Added 2026 meeting dates (from screenshots) for meeting-based curve."
+  notes: "ECB config with official 2026 meeting dates (meeting-based curve enabled)"
