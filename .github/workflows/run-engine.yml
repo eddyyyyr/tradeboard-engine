@@ -10,6 +10,11 @@ on:
       - "data/output/**"
   workflow_dispatch:
 
+# ✅ Évite 2 runs en parallèle qui se marchent dessus
+concurrency:
+  group: tradeboard-engine-main
+  cancel-in-progress: true
+
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -18,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true
-          fetch-depth: 0   # IMPORTANT pour pouvoir pull/rebase
+          fetch-depth: 0  # ✅ nécessaire pour rebase propre
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,6 +35,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyyaml
 
+      # ✅ IMPORTANT : on se met à jour AVANT de générer les JSON
+      - name: Sync with remote (rebase)
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git pull --rebase origin main
+
       - name: Run engine
         run: |
           python3 -m engine.main
@@ -38,18 +50,20 @@ jobs:
         run: |
           echo "Listing data/output:"
           ls -la data/output || true
+          echo "Git status:"
+          git status --porcelain || true
 
       - name: Commit generated JSON
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          # Toujours se synchroniser avant push
-          git pull --rebase origin main
-
-          # Add JSON (même si gitignored)
+          # Force add in case data/output is gitignored
           git add -f data/output/*.json
 
           git commit -m "Update implied curves JSON" || echo "Nothing to commit"
+
+          # ✅ Repo clean -> on peut rebase si quelqu’un a push entre temps
+          git pull --rebase origin main
 
           git push origin main
