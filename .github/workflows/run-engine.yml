@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true
+          fetch-depth: 0   # IMPORTANT pour pouvoir pull/rebase
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -43,8 +44,12 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          # Force add in case data/output is gitignored
+          # Toujours se synchroniser avant push
+          git pull --rebase origin main
+
+          # Add JSON (même si gitignored)
           git add -f data/output/*.json
 
           git commit -m "Update implied curves JSON" || echo "Nothing to commit"
-          git push
+
+          git push origin main
