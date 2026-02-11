@@ -5,8 +5,7 @@
   "expectedRateAfterRaw": 3.451071,
   "expectedMoveBps": -29.89,
   "distribution": {
-    "3.25": 0.195716,
-    "3.5": 0.804284
+    "3.50": 1.0
   },
   "probabilities": {
     "cut": 1.0,
@@ -15,10 +14,7 @@
   },
   "mainScenario": {
     "rate": 3.5,
-    "prob": 0.804284
+    "prob": 1.0
   },
-  "altScenario": {
-    "rate": 3.25,
-    "prob": 0.195716
-  }
+  "altScenario": null
 }

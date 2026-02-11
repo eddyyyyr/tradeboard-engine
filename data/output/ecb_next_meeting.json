@@ -2,23 +2,19 @@
   "meetingDate": "2026-02-05",
   "month": "2026-02",
   "currentRate": 2.15,
-  "expectedRateAfterRaw": 1.89625,
-  "expectedMoveBps": -25.37,
+  "expectedRateAfterRaw": 2.033333,
+  "expectedMoveBps": -11.67,
   "distribution": {
-    "1.75": 0.415,
-    "2.0": 0.585
+    "2.00": 1.0
   },
   "probabilities": {
-    "cut": 0.415,
-    "hold": 0.585,
+    "cut": 1.0,
+    "hold": 0.0,
     "hike": 0.0
   },
   "mainScenario": {
     "rate": 2.0,
-    "prob": 0.585
+    "prob": 1.0
   },
-  "altScenario": {
-    "rate": 1.75,
-    "prob": 0.415
-  }
+  "altScenario": null
 }
