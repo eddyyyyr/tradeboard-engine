@@ -9,7 +9,6 @@ from pathlib import Path
 
 from .load_config import load_config
 from .meeting_expected import compute_after_meeting_curve
-from .next_meeting import build_next_meeting_summary
 
 # ----------------------------
 # ✅ 1 CSV global (watchlist)
@@ -17,16 +16,21 @@ from .next_meeting import build_next_meeting_summary
 CSV_PATH = Path("data/futures/watchlist.csv")
 OUT_DIR = Path("data/output")
 
-# Filtrage par banque via la colonne "Name" du CSV
+# ✅ Filtrage par banque via la colonne "Name" du CSV (fallback)
 NAME_FILTERS = {
     "FED": ["30-Day Fed Funds"],
     "BOE": ["3-Month SONIA"],
-    # ECB : adapte si besoin selon tes libellés exacts dans watchlist.csv
-    "ECB": ["€STR", "ESTR", "Euribor", "EURIBOR"],
-    # Exemples si tu ajoutes après :
-    # "SNB": ["3-Month SARON"],
-    # "BOC": ["CORRA 3-Month", "CORRA 3-Month"],
-    # "BOJ": ["3-Month TONA", "TONA"],
+    # ECB : on ne s'en sert plus si SYMBOL_PREFIX_FILTERS["ECB"] est défini
+    "ECB": ["Euribor", "EURIBOR", "€STR", "ESTR", "Euribor"],
+}
+
+# ✅ Filtre STRICT par préfixe de "Symbol" (recommandé pour éviter les mixes)
+# Euribor 3M (ICE) sur Barchart apparaît souvent en "IMH26, IMM26, IMU26, IMZ26..."
+SYMBOL_PREFIX_FILTERS = {
+    "ECB": ["IM"],  # ✅ Euribor only
+    # Si tu veux plus tard :
+    # "FED": ["ZQ"],
+    # "BOE": ["J8"],
 }
 
 # Mapping des codes mois futures (H=Mar, M=Jun, U=Sep, Z=Dec, etc.)
@@ -116,7 +120,7 @@ def load_csv_rows(csv_path: Path) -> list[dict]:
     with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         for r in reader:
-            symbol = (r.get("Symbol") or "").strip()
+            symbol = (r.get("Symbol") or "").strip().upper()
             name = (r.get("Name") or "").strip()
             latest = to_float(r.get("Latest") or "")
             volume = to_int(r.get("Volume") or "")
@@ -138,12 +142,25 @@ def load_csv_rows(csv_path: Path) -> list[dict]:
 
 
 def filter_rows_for_bank(rows: list[dict], bank_code: str) -> list[dict]:
-    filters = NAME_FILTERS.get(bank_code, [])
+    """
+    ✅ Priorité 1 : filtre strict par préfixe (si défini)
+    ✅ Sinon : fallback par Name contains (ancien système)
+    """
+    prefixes = SYMBOL_PREFIX_FILTERS.get(bank_code, []) or []
+    if prefixes:
+        prefixes_u = [p.upper() for p in prefixes]
+        filtered = []
+        for r in rows:
+            sym = (r.get("symbol") or "").upper()
+            if any(sym.startswith(p) for p in prefixes_u):
+                filtered.append(r)
+        return filtered
+
+    filters = NAME_FILTERS.get(bank_code, []) or []
     if not filters:
         return []
 
     filters_l = [f.lower() for f in filters]
-
     filtered: list[dict] = []
     for r in rows:
         nm = (r.get("name") or "").lower()
@@ -198,16 +215,13 @@ def meeting_months_from_config(cfg: dict) -> tuple[set[str], dict[str, str]]:
       dates:
         - "2026-02-05"
         - "2026-03-18"
-
-    Retourne :
-    - set des mois "YYYY-MM"
-    - mapping month -> meeting_date (première date du mois)
     """
     meetings = cfg.get("meetings", {})
     if not isinstance(meetings, dict):
         return set(), {}
 
-    dates = meetings.get("dates", []) or []
+    # ⚠️ Dans tes configs, tu utilises parfois "dates" ou "days"
+    dates = meetings.get("dates") or meetings.get("days") or []
     months: set[str] = set()
     month_to_date: dict[str, str] = {}
 
@@ -279,7 +293,8 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
     print(f"Current rate: {current_rate}")
     print(f"CSV: {CSV_PATH}")
     print(f"Price formula: {price_formula}")
-    print(f"Name filters: {NAME_FILTERS.get(bank_code)}")
+    print(f"Symbol prefix filters: {SYMBOL_PREFIX_FILTERS.get(bank_code)}")
+    print(f"Name filters (fallback): {NAME_FILTERS.get(bank_code)}")
     print(f"Increment bp: {increment_bp}")
 
     filtered = filter_rows_for_bank(all_rows, bank_code)
@@ -307,8 +322,38 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
             increment_bp=increment_bp,
         )
 
-        # 3) Next meeting summary (Financial Source-like)
-        next_meeting = build_next_meeting_summary(meetings_curve, cfg)
+        # 3) petit résumé "next meeting" (si dispo)
+        next_meeting = {}
+        if meetings_curve:
+            first = meetings_curve[0]
+            # Ce JSON est surtout pour l'UI Base44
+            # expectedMoveBps : utilise moveRawBps (plus précis)
+            dist = {}
+            # distribution simple sur 2 niveaux (rateAfter et rateAfter - increment)
+            # (tu peux raffiner plus tard)
+            rate_main = float(first.get("rateAfter", current_rate))
+            dist[f"{rate_main:.2f}"] = 1.0
+
+            probs = {"cut": 0.0, "hold": 0.0, "hike": 0.0}
+            move_raw = float(first.get("moveRawBps", 0.0))
+            if move_raw < -1e-9:
+                probs["cut"] = 1.0
+            elif move_raw > 1e-9:
+                probs["hike"] = 1.0
+            else:
+                probs["hold"] = 1.0
+
+            next_meeting = {
+                "meetingDate": first.get("meetingDate"),
+                "month": first.get("month"),
+                "currentRate": current_rate,
+                "expectedRateAfterRaw": first.get("rateRaw"),
+                "expectedMoveBps": round(move_raw, 2),
+                "distribution": dist,
+                "probabilities": probs,
+                "mainScenario": {"rate": rate_main, "prob": 1.0},
+                "altScenario": None,
+            }
 
     # ✅ Écrit les 3 fichiers
     write_json(out_curve_path, curve)
@@ -324,9 +369,8 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
 
     print("\n📅 Meeting curve (Option B):")
     for p in meetings_curve[:12]:
-        md = p.get("meetingDate", "n/a")
         print(
-            f"{md} | rateAfter={p.get('rateAfter')} | moveAfterBps={p.get('moveAfterBps')} | w_after={p.get('weightAfter')}"
+            f"{p.get('meetingDate')} | rateAfter={p.get('rateAfter')} | moveAfterBps={p.get('moveAfterBps')} | w_after={p.get('weightAfter')}"
         )
     print(f"\n💾 Wrote JSON: {out_meetings_path} ({len(meetings_curve)} points)")
 
