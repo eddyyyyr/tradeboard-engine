@@ -17,11 +17,11 @@ CSV_PATH = Path("data/futures/watchlist.csv")
 OUT_DIR = Path("data/output")
 
 # Filtrage par banque via la colonne "Name" du CSV
+# ✅ ECB = Euribor ONLY (sinon mélange Euribor + €STR = courbe aberrante)
 NAME_FILTERS = {
     "FED": ["30-Day Fed Funds"],
     "BOE": ["3-Month SONIA"],
-    # ECB : Euribor / €STR / ESTR etc.
-    "ECB": ["3-Month Euribor", "€STR", "ESTR", "Euribor", "EURIBOR"],
+    "ECB": ["3-Month Euribor"],
 }
 
 # Mapping des codes mois futures (H=Mar, M=Jun, U=Sep, Z=Dec, etc.)
@@ -202,7 +202,7 @@ def strip_past_months(curve: list[dict]) -> list[dict]:
 
 
 # ----------------------------
-# ✅ NOUVEAU : interpolation mensuelle
+# ✅ Interpolation mensuelle (pour courbe lisse)
 # ----------------------------
 def densify_monthly_linear(curve: list[dict]) -> list[dict]:
     """
@@ -216,10 +216,8 @@ def densify_monthly_linear(curve: list[dict]) -> list[dict]:
     if len(curve) < 2:
         return curve
 
-    # Assure tri
     curve_sorted = sorted(curve, key=lambda x: x["month"])
 
-    # Indexer les points d'origine
     idx_points = [(month_to_index(p["month"]), p) for p in curve_sorted]
 
     out_by_idx: dict[int, dict] = {}
@@ -236,7 +234,6 @@ def densify_monthly_linear(curve: list[dict]) -> list[dict]:
         r0 = float(p0["rate"])
         r1 = float(p1["rate"])
 
-        # Remplit les mois entre
         for k in range(1, gap):
             t = k / gap
             rk = r0 + (r1 - r0) * t
@@ -256,7 +253,6 @@ def densify_monthly_linear(curve: list[dict]) -> list[dict]:
                 "synthetic": True,
             }
 
-    # Retour trié
     out = [out_by_idx[idx] for idx in sorted(out_by_idx.keys())]
     return out
 
@@ -349,7 +345,7 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
         # 1) supprime les dates passées
         curve = strip_past_months(curve)
 
-        # 2) ✅ ECB (Euribor IMM) : densifie en mensuel pour une courbe “Financial Source-like”
+        # 2) ✅ densifie en mensuel (courbe lisse)
         if bank_code == "ECB":
             curve = densify_monthly_linear(curve)
 
