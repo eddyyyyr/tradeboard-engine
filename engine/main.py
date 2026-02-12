@@ -16,21 +16,12 @@ from .meeting_expected import compute_after_meeting_curve
 CSV_PATH = Path("data/futures/watchlist.csv")
 OUT_DIR = Path("data/output")
 
-# ✅ Filtrage par banque via la colonne "Name" du CSV (fallback)
+# Filtrage par banque via la colonne "Name" du CSV
 NAME_FILTERS = {
     "FED": ["30-Day Fed Funds"],
     "BOE": ["3-Month SONIA"],
-    # ECB : on ne s'en sert plus si SYMBOL_PREFIX_FILTERS["ECB"] est défini
-    "ECB": ["Euribor", "EURIBOR", "€STR", "ESTR", "Euribor"],
-}
-
-# ✅ Filtre STRICT par préfixe de "Symbol" (recommandé pour éviter les mixes)
-# Euribor 3M (ICE) sur Barchart apparaît souvent en "IMH26, IMM26, IMU26, IMZ26..."
-SYMBOL_PREFIX_FILTERS = {
-    "ECB": ["IM"],  # ✅ Euribor only
-    # Si tu veux plus tard :
-    # "FED": ["ZQ"],
-    # "BOE": ["J8"],
+    # ECB : Euribor / €STR / ESTR etc.
+    "ECB": ["3-Month Euribor", "€STR", "ESTR", "Euribor", "EURIBOR"],
 }
 
 # Mapping des codes mois futures (H=Mar, M=Jun, U=Sep, Z=Dec, etc.)
@@ -50,10 +41,27 @@ MONTH_CODE = {
 }
 
 
+# ----------------------------
+# ✅ Helpers dates mois
+# ----------------------------
 def now_month_utc() -> str:
     """Retourne le mois courant en UTC au format 'YYYY-MM'."""
     dt = datetime.now(timezone.utc)
     return f"{dt.year:04d}-{dt.month:02d}"
+
+
+def month_to_index(month: str) -> int:
+    """'YYYY-MM' -> index linéaire (année*12 + mois-1)"""
+    y = int(month[0:4])
+    m = int(month[5:7])
+    return y * 12 + (m - 1)
+
+
+def index_to_month(idx: int) -> str:
+    """index linéaire -> 'YYYY-MM'"""
+    y = idx // 12
+    m = (idx % 12) + 1
+    return f"{y:04d}-{m:02d}"
 
 
 def parse_month_from_symbol(symbol: str) -> str | None:
@@ -64,7 +72,6 @@ def parse_month_from_symbol(symbol: str) -> str | None:
     if len(symbol) < 4:
         return None
 
-    # Attend un format type ZQX25 (root + monthLetter + yy)
     month_letter = symbol[-3]
     yy = symbol[-2:]
 
@@ -93,7 +100,7 @@ def to_int(x: str) -> int | None:
     if not x:
         return None
     try:
-        return int(float(x))  # au cas où c'est "20674.0"
+        return int(float(x))
     except ValueError:
         return None
 
@@ -120,7 +127,7 @@ def load_csv_rows(csv_path: Path) -> list[dict]:
     with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         for r in reader:
-            symbol = (r.get("Symbol") or "").strip().upper()
+            symbol = (r.get("Symbol") or "").strip()
             name = (r.get("Name") or "").strip()
             latest = to_float(r.get("Latest") or "")
             volume = to_int(r.get("Volume") or "")
@@ -142,25 +149,12 @@ def load_csv_rows(csv_path: Path) -> list[dict]:
 
 
 def filter_rows_for_bank(rows: list[dict], bank_code: str) -> list[dict]:
-    """
-    ✅ Priorité 1 : filtre strict par préfixe (si défini)
-    ✅ Sinon : fallback par Name contains (ancien système)
-    """
-    prefixes = SYMBOL_PREFIX_FILTERS.get(bank_code, []) or []
-    if prefixes:
-        prefixes_u = [p.upper() for p in prefixes]
-        filtered = []
-        for r in rows:
-            sym = (r.get("symbol") or "").upper()
-            if any(sym.startswith(p) for p in prefixes_u):
-                filtered.append(r)
-        return filtered
-
-    filters = NAME_FILTERS.get(bank_code, []) or []
+    filters = NAME_FILTERS.get(bank_code, [])
     if not filters:
         return []
 
     filters_l = [f.lower() for f in filters]
+
     filtered: list[dict] = []
     for r in rows:
         nm = (r.get("name") or "").lower()
@@ -187,12 +181,13 @@ def build_curve(picked: list[dict], price_formula: str) -> list[dict]:
         rate = implied_rate_from_price(r["price"], price_formula)
         curve.append(
             {
-                "month": r["month"],      # "2026-06"
-                "rate": round(rate, 4),   # 3.51
-                "symbol": r["symbol"],    # "ZQM26"
-                "price": r["price"],      # 96.49
-                "volume": r["volume"],    # 4308
-                "name": r.get("name", ""),  # utile debug
+                "month": r["month"],
+                "rate": round(rate, 4),
+                "symbol": r["symbol"],
+                "price": r["price"],
+                "volume": r["volume"],
+                "name": r.get("name", ""),
+                "synthetic": False,
             }
         )
     return curve
@@ -206,58 +201,103 @@ def strip_past_months(curve: list[dict]) -> list[dict]:
     return [p for p in curve if (p.get("month") or "") >= cutoff]
 
 
-def meeting_months_from_config(cfg: dict) -> tuple[set[str], dict[str, str]]:
+# ----------------------------
+# ✅ NOUVEAU : interpolation mensuelle
+# ----------------------------
+def densify_monthly_linear(curve: list[dict]) -> list[dict]:
     """
-    Lit les dates de réunions depuis config si présentes.
+    Si la courbe a des trous (ex: Mar, Jun, Sep, Dec),
+    on ajoute les mois manquants par interpolation linéaire des rates.
 
-    Format attendu :
+    Les points interpolés auront:
+      - synthetic=True
+      - symbol/price/volume/name vides (ou 0)
+    """
+    if len(curve) < 2:
+        return curve
+
+    # Assure tri
+    curve_sorted = sorted(curve, key=lambda x: x["month"])
+
+    # Indexer les points d'origine
+    idx_points = [(month_to_index(p["month"]), p) for p in curve_sorted]
+
+    out_by_idx: dict[int, dict] = {}
+    for idx, p in idx_points:
+        out_by_idx[idx] = p
+
+    for i in range(len(idx_points) - 1):
+        idx0, p0 = idx_points[i]
+        idx1, p1 = idx_points[i + 1]
+        gap = idx1 - idx0
+        if gap <= 1:
+            continue
+
+        r0 = float(p0["rate"])
+        r1 = float(p1["rate"])
+
+        # Remplit les mois entre
+        for k in range(1, gap):
+            t = k / gap
+            rk = r0 + (r1 - r0) * t
+            idxk = idx0 + k
+            mk = index_to_month(idxk)
+
+            if idxk in out_by_idx:
+                continue
+
+            out_by_idx[idxk] = {
+                "month": mk,
+                "rate": round(rk, 4),
+                "symbol": "",
+                "price": None,
+                "volume": 0,
+                "name": "synthetic",
+                "synthetic": True,
+            }
+
+    # Retour trié
+    out = [out_by_idx[idx] for idx in sorted(out_by_idx.keys())]
+    return out
+
+
+def meeting_months_from_config(cfg: dict) -> list[str]:
+    """
+    Accepte:
     meetings:
-      dates:
+      days:
         - "2026-02-05"
-        - "2026-03-18"
+        - "2026-03-19"
+    ou
+    meetings:
+      dates: [...]
     """
     meetings = cfg.get("meetings", {})
     if not isinstance(meetings, dict):
-        return set(), {}
+        return []
 
-    # ⚠️ Dans tes configs, tu utilises parfois "dates" ou "days"
-    dates = meetings.get("dates") or meetings.get("days") or []
-    months: set[str] = set()
-    month_to_date: dict[str, str] = {}
+    dates = meetings.get("days") or meetings.get("dates") or []
+    if not isinstance(dates, list):
+        return []
 
+    out: list[str] = []
     for d in dates:
-        if not isinstance(d, str) or len(d) < 7:
-            continue
-        try:
-            y = int(d[0:4])
-            m = int(d[5:7])
-            month = f"{y:04d}-{m:02d}"
-        except Exception:
-            continue
-
-        months.add(month)
-        if month not in month_to_date:
-            month_to_date[month] = d
-
-    return months, month_to_date
+        if isinstance(d, str) and len(d) >= 10:
+            out.append(d)
+    return sorted(out)
 
 
 def filter_curve_to_meetings(
     curve: list[dict],
-    meeting_months: set[str],
-    month_to_date: dict[str, str],
+    meeting_dates: list[str],
     current_rate: float,
     increment_bp: int,
 ) -> list[dict]:
     """
-    OPTION B (precise): transforme la courbe mensuelle en points "après réunion"
-    via pondération jours avant/après.
+    OPTION B: points après réunion (pondération jours avant/après) à partir de la courbe mensuelle.
     """
-    if not meeting_months:
+    if not meeting_dates:
         return []
-
-    meeting_dates = sorted(month_to_date.values())
-
     return compute_after_meeting_curve(
         monthly_curve=curve,
         meeting_dates=meeting_dates,
@@ -285,7 +325,6 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
 
     out_curve_path = OUT_DIR / f"{code_lower}_implied_curve.json"
     out_meetings_path = OUT_DIR / f"{code_lower}_implied_meetings.json"
-    out_next_path = OUT_DIR / f"{code_lower}_next_meeting.json"
 
     print(f"\n==============================")
     print(f"✅ {bank_code} loaded")
@@ -293,8 +332,7 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
     print(f"Current rate: {current_rate}")
     print(f"CSV: {CSV_PATH}")
     print(f"Price formula: {price_formula}")
-    print(f"Symbol prefix filters: {SYMBOL_PREFIX_FILTERS.get(bank_code)}")
-    print(f"Name filters (fallback): {NAME_FILTERS.get(bank_code)}")
+    print(f"Name filters: {NAME_FILTERS.get(bank_code)}")
     print(f"Increment bp: {increment_bp}")
 
     filtered = filter_rows_for_bank(all_rows, bank_code)
@@ -304,7 +342,6 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
         print(f"⚠️ No rows matched for {bank_code}. JSON will be empty.")
         curve: list[dict] = []
         meetings_curve: list[dict] = []
-        next_meeting: dict = {}
     else:
         picked = pick_one_per_month_max_volume(filtered)
         curve = build_curve(picked, price_formula)
@@ -312,59 +349,26 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
         # 1) supprime les dates passées
         curve = strip_past_months(curve)
 
-        # 2) OPTION B: points après réunion (pondération)
-        meeting_months, month_to_date = meeting_months_from_config(cfg)
+        # 2) ✅ ECB (Euribor IMM) : densifie en mensuel pour une courbe “Financial Source-like”
+        if bank_code == "ECB":
+            curve = densify_monthly_linear(curve)
+
+        # 3) OPTION B: meetings (si dates présentes)
+        meeting_dates = meeting_months_from_config(cfg)
         meetings_curve = filter_curve_to_meetings(
             curve=curve,
-            meeting_months=meeting_months,
-            month_to_date=month_to_date,
+            meeting_dates=meeting_dates,
             current_rate=current_rate,
             increment_bp=increment_bp,
         )
 
-        # 3) petit résumé "next meeting" (si dispo)
-        next_meeting = {}
-        if meetings_curve:
-            first = meetings_curve[0]
-            # Ce JSON est surtout pour l'UI Base44
-            # expectedMoveBps : utilise moveRawBps (plus précis)
-            dist = {}
-            # distribution simple sur 2 niveaux (rateAfter et rateAfter - increment)
-            # (tu peux raffiner plus tard)
-            rate_main = float(first.get("rateAfter", current_rate))
-            dist[f"{rate_main:.2f}"] = 1.0
-
-            probs = {"cut": 0.0, "hold": 0.0, "hike": 0.0}
-            move_raw = float(first.get("moveRawBps", 0.0))
-            if move_raw < -1e-9:
-                probs["cut"] = 1.0
-            elif move_raw > 1e-9:
-                probs["hike"] = 1.0
-            else:
-                probs["hold"] = 1.0
-
-            next_meeting = {
-                "meetingDate": first.get("meetingDate"),
-                "month": first.get("month"),
-                "currentRate": current_rate,
-                "expectedRateAfterRaw": first.get("rateRaw"),
-                "expectedMoveBps": round(move_raw, 2),
-                "distribution": dist,
-                "probabilities": probs,
-                "mainScenario": {"rate": rate_main, "prob": 1.0},
-                "altScenario": None,
-            }
-
-    # ✅ Écrit les 3 fichiers
     write_json(out_curve_path, curve)
     write_json(out_meetings_path, meetings_curve)
-    write_json(out_next_path, next_meeting)
 
     print("\n📈 Monthly curve (future months only):")
-    for p in curve[:12]:
-        print(
-            f"{p['month']} | {p['symbol']} | price={p['price']} | vol={p['volume']} -> {p['rate']} %"
-        )
+    for p in curve[:24]:
+        syn = " (synthetic)" if p.get("synthetic") else ""
+        print(f"{p['month']} -> {p['rate']}%{syn}")
     print(f"\n💾 Wrote JSON: {out_curve_path} ({len(curve)} points)")
 
     print("\n📅 Meeting curve (Option B):")
@@ -373,13 +377,6 @@ def run_bank(bank_code: str, all_rows: list[dict]) -> None:
             f"{p.get('meetingDate')} | rateAfter={p.get('rateAfter')} | moveAfterBps={p.get('moveAfterBps')} | w_after={p.get('weightAfter')}"
         )
     print(f"\n💾 Wrote JSON: {out_meetings_path} ({len(meetings_curve)} points)")
-
-    if next_meeting:
-        print("\n🎯 Next meeting summary:")
-        print(
-            f"date={next_meeting.get('meetingDate')} | expectedMoveBps={next_meeting.get('expectedMoveBps')} | probs={next_meeting.get('probabilities')}"
-        )
-    print(f"\n💾 Wrote JSON: {out_next_path}")
 
 
 def main():
