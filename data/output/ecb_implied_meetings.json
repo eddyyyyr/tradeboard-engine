@@ -1,72 +1,37 @@
 [
   {
-    "meetingDate": "2026-02-05",
-    "month": "2026-02",
-    "rateAfter": 2.0,
-    "rateRaw": 2.033333,
-    "moveAfterBps": -15.0,
-    "moveRawBps": -11.6667,
-    "weightBefore": 0.142857,
-    "weightAfter": 0.857143
-  },
-  {
     "meetingDate": "2026-03-19",
-    "month": "2026-03",
-    "rateAfter": 2.0,
-    "rateRaw": 2.119231,
-    "moveAfterBps": 0.0,
-    "moveRawBps": 11.9231,
-    "weightBefore": 0.580645,
-    "weightAfter": 0.419355
+    "rateAfter": 1.5832,
+    "month": "2026-03"
   },
   {
     "meetingDate": "2026-04-30",
-    "month": "2026-04",
-    "rateAfter": 3.25,
-    "rateRaw": 3.2,
-    "moveAfterBps": 125.0,
-    "moveRawBps": 120.0,
-    "weightBefore": 0.966667,
-    "weightAfter": 0.033333
+    "rateAfter": 0.0,
+    "month": "2026-04"
   },
   {
-    "meetingDate": "2026-06-18",
-    "month": "2026-06",
-    "rateAfter": 0.5,
-    "rateRaw": 0.411538,
-    "moveAfterBps": -275.0,
-    "moveRawBps": -283.8462,
-    "weightBefore": 0.566667,
-    "weightAfter": 0.433333
+    "meetingDate": "2026-06-11",
+    "rateAfter": 2.5566,
+    "month": "2026-06"
   },
   {
-    "meetingDate": "2026-07-30",
-    "month": "2026-07",
-    "rateAfter": 24.0,
-    "rateRaw": 24.00885,
-    "moveAfterBps": 2350.0,
-    "moveRawBps": 2350.885,
-    "weightBefore": 0.935484,
-    "weightAfter": 0.064516
+    "meetingDate": "2026-07-23",
+    "rateAfter": 1.04,
+    "month": "2026-07"
   },
   {
-    "meetingDate": "2026-09-16",
-    "month": "2026-09",
-    "rateAfter": -20.0,
-    "rateRaw": -19.98,
-    "moveAfterBps": -4400.0,
-    "moveRawBps": -4398.0,
-    "weightBefore": 0.5,
-    "weightAfter": 0.5
+    "meetingDate": "2026-09-10",
+    "rateAfter": 2.6845,
+    "month": "2026-09"
   },
   {
-    "meetingDate": "2026-10-28",
-    "month": "2026-10",
-    "rateAfter": 150.75,
-    "rateRaw": 150.629425,
-    "moveAfterBps": 17075.0,
-    "moveRawBps": 17062.9425,
-    "weightBefore": 0.870968,
-    "weightAfter": 0.129032
+    "meetingDate": "2026-10-29",
+    "rateAfter": 0.2606,
+    "month": "2026-10"
+  },
+  {
+    "meetingDate": "2026-12-17",
+    "rateAfter": 1.8335,
+    "month": "2026-12"
   }
 ]
