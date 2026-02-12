@@ -5,7 +5,8 @@
     "symbol": "ZQG26",
     "price": 96.365,
     "volume": 32791,
-    "name": "30-Day Fed Funds"
+    "name": "30-Day Fed Funds",
+    "synthetic": false
   },
   {
     "month": "2026-03",
@@ -13,7 +14,8 @@
     "symbol": "ZQH26",
     "price": 96.385,
     "volume": 13658,
-    "name": "30-Day Fed Funds"
+    "name": "30-Day Fed Funds",
+    "synthetic": false
   },
   {
     "month": "2026-04",
@@ -21,7 +23,8 @@
     "symbol": "ZQJ26",
     "price": 96.4,
     "volume": 20341,
-    "name": "30-Day Fed Funds"
+    "name": "30-Day Fed Funds",
+    "synthetic": false
   },
   {
     "month": "2026-05",
@@ -29,7 +32,8 @@
     "symbol": "ZQK26",
     "price": 96.45,
     "volume": 37344,
-    "name": "30-Day Fed Funds"
+    "name": "30-Day Fed Funds",
+    "synthetic": false
   },
   {
     "month": "2026-06",
@@ -37,7 +41,8 @@
     "symbol": "ZQM26",
     "price": 96.505,
     "volume": 39337,
-    "name": "30-Day Fed Funds"
+    "name": "30-Day Fed Funds",
+    "synthetic": false
   },
   {
     "month": "2026-07",
@@ -45,7 +50,8 @@
     "symbol": "ZQN26",
     "price": 96.58,
     "volume": 43343,
-    "name": "30-Day Fed Funds"
+    "name": "30-Day Fed Funds",
+    "synthetic": false
   },
   {
     "month": "2026-08",
@@ -53,7 +59,8 @@
     "symbol": "ZQQ26",
     "price": 96.66,
     "volume": 24673,
-    "name": "30-Day Fed Funds"
+    "name": "30-Day Fed Funds",
+    "synthetic": false
   },
   {
     "month": "2026-09",
@@ -61,7 +68,8 @@
     "symbol": "ZQU26",
     "price": 96.71,
     "volume": 7640,
-    "name": "30-Day Fed Funds"
+    "name": "30-Day Fed Funds",
+    "synthetic": false
   },
   {
     "month": "2026-10",
@@ -69,7 +77,8 @@
     "symbol": "ZQV26",
     "price": 96.77,
     "volume": 17719,
-    "name": "30-Day Fed Funds"
+    "name": "30-Day Fed Funds",
+    "synthetic": false
   },
   {
     "month": "2026-11",
@@ -77,7 +86,8 @@
     "symbol": "ZQX26",
     "price": 96.825,
     "volume": 8662,
-    "name": "30-Day Fed Funds"
+    "name": "30-Day Fed Funds",
+    "synthetic": false
   },
   {
     "month": "2026-12",
@@ -85,6 +95,7 @@
     "symbol": "ZQZ26",
     "price": 96.86,
     "volume": 6259,
-    "name": "30-Day Fed Funds"
+    "name": "30-Day Fed Funds",
+    "synthetic": false
   }
 ]

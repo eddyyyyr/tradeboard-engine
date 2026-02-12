@@ -5,7 +5,8 @@
     "symbol": "J8H26",
     "price": 96.38,
     "volume": 29518,
-    "name": "3-Month SONIA"
+    "name": "3-Month SONIA",
+    "synthetic": false
   },
   {
     "month": "2026-06",
@@ -13,7 +14,8 @@
     "symbol": "J8M26",
     "price": 96.545,
     "volume": 26782,
-    "name": "3-Month SONIA"
+    "name": "3-Month SONIA",
+    "synthetic": false
   },
   {
     "month": "2026-09",
@@ -21,7 +23,8 @@
     "symbol": "J8U26",
     "price": 96.625,
     "volume": 24721,
-    "name": "3-Month SONIA"
+    "name": "3-Month SONIA",
+    "synthetic": false
   },
   {
     "month": "2026-12",
@@ -29,6 +32,7 @@
     "symbol": "J8Z26",
     "price": 96.63,
     "volume": 26688,
-    "name": "3-Month SONIA"
+    "name": "3-Month SONIA",
+    "synthetic": false
   }
 ]

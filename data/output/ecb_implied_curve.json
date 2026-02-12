@@ -1,11 +1,39 @@
 [
   {
+    "month": "2026-02",
+    "rate": 1.9325,
+    "symbol": "CU7G26",
+    "price": 98.0675,
+    "volume": 7,
+    "name": "ECB Dated ESTR Futures",
+    "synthetic": false
+  },
+  {
     "month": "2026-03",
     "rate": 2.05,
     "symbol": "IMH26",
     "price": 97.95,
     "volume": 62570,
-    "name": "3-Month Euribor"
+    "name": "3-Month Euribor",
+    "synthetic": false
+  },
+  {
+    "month": "2026-04",
+    "rate": 1.9837,
+    "symbol": "",
+    "price": null,
+    "volume": 0,
+    "name": "synthetic",
+    "synthetic": true
+  },
+  {
+    "month": "2026-05",
+    "rate": 1.9175,
+    "symbol": "CU7K26",
+    "price": 98.0825,
+    "volume": 193,
+    "name": "ECB Dated ESTR Futures",
+    "synthetic": false
   },
   {
     "month": "2026-06",
@@ -13,7 +41,26 @@
     "symbol": "IMM26",
     "price": 97.98,
     "volume": 90442,
-    "name": "3-Month Euribor"
+    "name": "3-Month Euribor",
+    "synthetic": false
+  },
+  {
+    "month": "2026-07",
+    "rate": 2.0167,
+    "symbol": "",
+    "price": null,
+    "volume": 0,
+    "name": "synthetic",
+    "synthetic": true
+  },
+  {
+    "month": "2026-08",
+    "rate": 2.0133,
+    "symbol": "",
+    "price": null,
+    "volume": 0,
+    "name": "synthetic",
+    "synthetic": true
   },
   {
     "month": "2026-09",
@@ -21,7 +68,26 @@
     "symbol": "IMU26",
     "price": 97.99,
     "volume": 106227,
-    "name": "3-Month Euribor"
+    "name": "3-Month Euribor",
+    "synthetic": false
+  },
+  {
+    "month": "2026-10",
+    "rate": 1.95,
+    "symbol": "",
+    "price": null,
+    "volume": 0,
+    "name": "synthetic",
+    "synthetic": true
+  },
+  {
+    "month": "2026-11",
+    "rate": 1.89,
+    "symbol": "CU7X26",
+    "price": 98.11,
+    "volume": 0,
+    "name": "ECB Dated ESTR Futures",
+    "synthetic": false
   },
   {
     "month": "2026-12",
@@ -29,6 +95,7 @@
     "symbol": "IMZ26",
     "price": 97.97,
     "volume": 138673,
-    "name": "3-Month Euribor"
+    "name": "3-Month Euribor",
+    "synthetic": false
   }
 ]
